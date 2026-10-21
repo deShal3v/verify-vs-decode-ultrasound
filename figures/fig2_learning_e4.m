@@ -1,6 +1,5 @@
-% Phase E4 copy of fig2_learning.m (2026-10-20): reads figdata/fig2_data_e4.json (verifiers/analysis/make_fig_data.py) and
-% ../results/within_story_control.csv, writes figs/fig2_learning_e4.*.
-% ISBI 2027 draft, Figure 2: evidence against training data for every condition (none, -6, -12, -18 dB uniform noise, gray within-story control in C; simulated
+% Phase E4 copy of fig2_learning.m (2026-10-20): reads figdata/fig2_data_e4.json (verifiers/analysis/make_fig_data.py), writes figs/fig2_learning_e4.*.
+% ISBI 2027 draft, Figure 2: evidence against training data for every condition (none, -6, -12, -18 dB uniform noise; simulated
 % ultrasound with one and two probes, optimistic physics), training needed for the goal, and noise survived with the same
 % training. Style: plain letters outside the corner, short centred
 % titles, decoder red, encode-then-compare blue, contrastive green, mean +- s.e.m. over the three participants).
@@ -57,12 +56,6 @@ for c = 1:6
         m = mean(Y, 2); se = std(Y, 0, 2) / sqrt(size(Y, 2));
         plot(ax, X, m, '-', 'Color', ser{k, 2}, 'LineWidth', 1.3);
         for i = 1:numel(X), plot(ax, [X(i) X(i)], m(i) + [-1 1] * se(i), '-', 'Color', ser{k, 2}, 'LineWidth', 0.9); end
-    end
-    if c == 3 && exist([P '../results/within_story_control.csv'], 'file')       % within-story control (Omer 2026-10-21): gray, same-story wrong options
-        W = readtable([P '../results/within_story_control.csv'], 'TextType', 'string', 'Delimiter', ',');
-        w = W.bits_same_story(W.condition == "-12 dB" & W.participant ~= "mean");
-        plot(ax, [15.65 15.65], mean(w) + [-1 1] * std(w) / sqrt(numel(w)), '-', 'Color', GREY, 'LineWidth', 0.9);
-        plot(ax, 15.65, mean(w), 'o', 'MarkerSize', 3.2, 'MarkerFaceColor', GREY, 'MarkerEdgeColor', 'w', 'LineWidth', 0.3);
     end
     if c == 4
         if isempty(D.S1.cur_m18c_dec_empBig), text(ax, 15.6, 3.2, 'decoder not run', 'Color', RED, 'FontSize', FS, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle'); end

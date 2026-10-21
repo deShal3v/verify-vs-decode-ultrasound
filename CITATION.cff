@@ -9,6 +9,14 @@ date-released: 2026-10-21
 year: 2026
 license: MIT
 repository-code: "https://github.com/deShal3v/verify-vs-decode-ultrasound"
+doi: 10.5281/zenodo.23527277
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23527276
+    description: "Concept DOI (all versions)"
+  - type: doi
+    value: 10.5281/zenodo.23527277
+    description: "Version v1.0-isbi"
 type: software
 preferred-citation:
   type: conference-paper
@@ -18,4 +26,4 @@ preferred-citation:
       given-names: Omer
       affiliation: "Independent researcher"
   collection-title: "IEEE International Symposium on Biomedical Imaging (ISBI 2027)"
-  year: 2026
+  year: 2027

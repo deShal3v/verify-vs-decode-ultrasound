@@ -2,6 +2,10 @@
 
 Omer Shalev, independent researcher
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23527277.svg)](https://doi.org/10.5281/zenodo.23527277)
+
+Archived on Zenodo: v1.0-isbi, doi:[10.5281/zenodo.23527277](https://doi.org/10.5281/zenodo.23527277) (all versions: doi:[10.5281/zenodo.23527276](https://doi.org/10.5281/zenodo.23527276)).
+
 Code for the IEEE ISBI 2027 paper. A per-voxel Monte Carlo link budget of a functional-ultrasound probe on the left temple
 (K = 2 one-second power-Doppler images per 2-s scan) predicts each voxel's signal-to-noise ratio; noise is added to public fMRI
 (LeBel et al. 2023, OpenNeuro ds003020, participants UTS01-03, 82 training stories) until every voxel has its predicted SNR

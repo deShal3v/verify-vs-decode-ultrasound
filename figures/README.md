@@ -8,7 +8,7 @@ identical text and an identical 200-dpi raster (checked with pdftotext and pdfto
 | figure | command | inputs |
 |---|---|---|
 | Fig. 1 (A: S1's head cut through the beam from the left temple, the path enlarged, two-way losses; B: speech signal per 2-s scan step by step; C: SNR change of the readouts' voxels vs distance) | `matlab -batch "run('figures/fig1_imaging_v3.m')"` | `figdata/fig1_data_k2.json`; the Blender renders in `fig1_3d/` |
-| Fig. 2 (learning curves A-F, training needed G, noise survived H; gray marker in C: within-story control) | `matlab -batch "run('figures/fig2_learning_e4.m')"` | `figdata/fig2_data_e4.json`, `results/within_story_control.csv` |
+| Fig. 2 (learning curves A-F, training needed G, noise survived H) | `matlab -batch "run('figures/fig2_learning_e4.m')"` | `figdata/fig2_data_e4.json` |
 | Fig. 3 (added gain under median physics) | `matlab -batch "run('figures/fig3_coded_e4.m')"` | `figdata/fig3_e4_data.json` |
 
 Add `-licmode onlinelicensing` for an online MATLAB licence.
