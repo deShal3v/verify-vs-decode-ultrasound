@@ -1,6 +1,7 @@
 """Fig. 1 of the paper: prints the numbers behind panels A and B (the link budget of a voxel 5 cm from the probe, every Monte
-Carlo input at its median, K = 2 one-second images per 2-s scan), the Monte Carlo spread at 5 cm, the noise that one probe adds
-to the readouts' voxels and the pessimistic reach (panel C and Section 3.1), checks each against the paper, and draws panel C.
+Carlo input at its median, K = 2 one-second images per 2-s scan), the Monte Carlo spread at 5 cm, the SNR change that one probe
+causes in the readouts' voxels, -10 log10(1 + f_v) (negative = more noise, the paper's convention), and the pessimistic reach
+(panel C and Section 3.1), checks each against the paper, and draws panel C.
 
 Physics only needs linkbudget/params.yaml. Panel C and the native fMRI SNR need per-voxel data; when these exist in $WORK_DIR
 (inputs/<S>/us_maps.npz with the K = 2 keys and anat_cols.npy, geometry/<S>_geometry.npz, <S>_sensor.json,
@@ -27,8 +28,8 @@ PAPER = {  # numbers as written in the ISBI 2027 draft (Fig. 1 caption, Sections
     "gap_to_fmri_dB": "22 to 24 dB below fMRI's (Section 3.1)",
     "target_5cm_dB": "-41.4 dB (Section 4)",
     "mc_5cm_p10_p50_p90_dB": "-61.0 / -41.9 / -28.4 dB (Fig. 1 figure data; not in the text)",
-    "added_noise_optimistic_dB": "11 to 14 dB (Section 3.1)",
-    "added_noise_median_dB": "23 to 26 dB (Section 3.1)",
+    "snr_change_optimistic_dB": "-11 to -14 dB (Section 3.1)",
+    "snr_change_median_dB": "-23 to -26 dB (Section 3.1)",
     "pessimistic_reach_cm": "1.9 to 4.9 cm (Section 3.1)",
     "dtilde_vs_dprime_dB": "13.5 dB below d' (rho sqrt(17.8/27) ~ 0.21) (Section 2.3)",
 }
@@ -162,8 +163,8 @@ def main():
     print(line); print("Monte Carlo (20,000 draws, seed 0) and panel C   [" + src + "]"); print(line)
     print(f"  target at 5 cm, p10 / p50 / p90: {mcq[0]:.1f} / {mcq[1]:.1f} / {mcq[2]:.1f} dB")
     print(f"  pessimistic (p10) voxels above the {PR.FLOOR_DB:.0f} dB floor: {reach[0]:.2f} to {reach[1]:.2f} cm from the probe")
-    for c, lab in CONDS.items():
-        print(f"  median noise added to the readouts' voxels, {lab:32s}: {' / '.join(f'{x:5.2f}' for x in med[c])} dB "
+    for c, lab in CONDS.items():                                             # SNR change = -10 log10(1 + f_v), negative = more noise (paper convention)
+        print(f"  median SNR change of the readouts' voxels, {lab:32s}: {' / '.join(f'{-x:6.2f}' for x in med[c])} dB "
               f"(kept {' / '.join(str(C['subjects'][s][c]['n_kept']) for s in SUBJ)} of {' / '.join(str(C['subjects'][s]['n_anat']) for s in SUBJ)} voxels)")
 
     from decimal import Decimal, ROUND_HALF_UP                              # round half up, as in the text (1.85 -> 1.9)
@@ -172,8 +173,8 @@ def main():
               ("gap_to_fmri_dB", f"{min(gap):.1f} to {max(gap):.1f} dB", (r0(min(gap)), r0(max(gap))) == (22, 24)),
               ("target_5cm_dB", f"{target:.2f} dB", r1(target) == -41.4),
               ("mc_5cm_p10_p50_p90_dB", " / ".join(f"{x:.1f}" for x in mcq), [r1(x) for x in mcq] == [-61.0, -41.9, -28.4]),
-              ("added_noise_optimistic_dB", f"{min(med['usL90']):.2f} to {max(med['usL90']):.2f} dB", (r0(min(med["usL90"])), r0(max(med["usL90"]))) == (11, 14)),
-              ("added_noise_median_dB", f"{min(med['usL50']):.2f} to {max(med['usL50']):.2f} dB", (r0(min(med["usL50"])), r0(max(med["usL50"]))) == (23, 26)),
+              ("snr_change_optimistic_dB", f"{-min(med['usL90']):.2f} to {-max(med['usL90']):.2f} dB", (r0(min(med["usL90"])), r0(max(med["usL90"]))) == (11, 14)),
+              ("snr_change_median_dB", f"{-min(med['usL50']):.2f} to {-max(med['usL50']):.2f} dB", (r0(min(med["usL50"])), r0(max(med["usL50"]))) == (23, 26)),
               ("pessimistic_reach_cm", f"{reach[0]:.2f} to {reach[1]:.2f} cm", (r1(reach[0]), r1(reach[1])) == (1.9, 4.9)),
               ("dtilde_vs_dprime_dB", f"{-(rho_db + vox_db):.2f} dB below d'", r1(-(rho_db + vox_db)) == 13.5)]
     print(line); print("Check against the paper (rounded as in the text)"); print(line)
@@ -181,7 +182,7 @@ def main():
         print(f"  {'MATCH   ' if ok else 'MISMATCH'} {k:30s} code: {got:34s} paper: {PAPER[k]}")
     draw_panel_c(C, os.path.join(OUT, "fig1c"))
     json.dump({"echo_rows_dB": e["rows"], "functional_rows_dB": fn, "dprime_dB": dpm, "target_5cm_dB": target, "native_median_dB": nat, "gap_dB": gap,
-               "mc_5cm_p10_p50_p90_dB": mcq, "pessimistic_reach_cm": reach, "added_noise_median_dB": med, "source_panel_c": src,
+               "mc_5cm_p10_p50_p90_dB": mcq, "pessimistic_reach_cm": reach, "snr_change_median_dB": {c: [-x for x in v] for c, v in med.items()}, "source_panel_c": src,
                "checks": {k: ok for k, _, ok in checks}}, open(os.path.join(OUT, "fig1_numbers.json"), "w"), indent=1)
     print(f"  {sum(ok for _, _, ok in checks)} of {len(checks)} numbers match the paper")
     print(line); print(f"wrote {OUT}/fig1_numbers.json, fig1c.png, fig1c.pdf"); print(line)

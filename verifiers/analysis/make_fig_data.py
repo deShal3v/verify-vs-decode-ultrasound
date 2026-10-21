@@ -2,7 +2,7 @@
 figure scripts draw them unchanged: usL90, usB90, usL50 and the uniform gains hold the K = 2 conditions (usL90k2, usB90k2, usL50k2,
 usL50k2u6/u12/u18); m18c now carries the decoder at x63 (Phase E4b), and the noise-survived ladder includes it.
 Writes <out>/fig2_data_e4.json and <out>/fig3_e4_data.json (the figure scripts' inputs).
-Run: python make_fig_data.py $WORK_DIR/analysis/GRID_E4_s7.json figures/data"""
+Run: python make_fig_data.py results/GRID_E4_s7.json figures/figdata"""
 import os, sys, json, numpy as np
 G = json.load(open(sys.argv[1])); FD = sys.argv[2]; os.makedirs(FD, exist_ok=True)
 num = lambda v: float(v) if isinstance(v, (int, float)) else (np.inf if v == "+inf" else -np.inf if v == "-inf" else np.nan)

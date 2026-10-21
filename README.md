@@ -16,11 +16,11 @@ contrastive) are trained on 11 min to 15.25 h and scored in bits per 20-s window
 | `linkbudget/` | the Monte Carlo link budget: `params.yaml` (every parameter, with its source), `snr_model.py`, `depth_curves.py`, `snr_montecarlo.py`, the probe geometry (`geom_lib.py`, `build_geometry.py`), the K = 2 per-voxel conditions (`k2_maps.py`) and `fig1_linkbudget.py`, which prints the Fig. 1A/B numbers and draws Fig. 1C |
 | `noise/` | Eq. 2: per-voxel fMRI SNR from the 10 test repeats (`ncsnr_stream.py`), empirical-Bayes shrinkage and the added-noise factor f_v (`snr_maps.py`), the noise injection on the GPU (`noise_us.py`), the spatial noise model (`noise_fit.py`, `fits/`) |
 | `voxels/` | the anatomical voxel set: `atlas_sets.py` (area sets from FreeSurfer, LanA, HCP-MMP1) and `make_anat_cols.py` (their union) |
-| `verifiers/` | contrastive verifier (`verify.py`, `verify_e.py`), encode-then-compare (`etc_feats.py`, `etc_feats_merge.py`, `etc_pool.py`, `etc_pool600.py`), text side (`prep_text.py`, `prep_text_words.py`, `text_meta.py`); `analysis/`: evidence, crossings, slopes and the bootstrap (`summarize.py`, `analyze_b.py`, `grid.py`), figure data (`make_fig_data.py`) |
+| `verifiers/` | contrastive verifier (`verify.py`, `verify_e.py`), encode-then-compare (`etc_feats.py`, `etc_feats_merge.py`, `etc_pool.py`, `etc_pool600.py`), text side (`prep_text.py`, `prep_text_words.py`, `text_meta.py`); `analysis/`: evidence, crossings, slopes and the bootstrap (`summarize.py`, `analyze_b.py`, `grid.py`), figure data (`make_fig_data.py`); `within_story_control/`: the same-story control (`ws_text.py`, `verify_ws.py`, `run_ws.sh`, `ws_analysis.py`) |
 | `decoder/` | wrappers around Tang et al.'s code (none of it is copied, see below): refit (`tang_fit.py`, `tang_fit_e.py`), decode (`tang_decode.py`, `tang_decode_frozen.py`, `upstream.py`), LM-only null texts and scoring (`tang_eval.py`, `tang_eval2.py`), bits (`tang_bits.py`, `tang_bits_d.py`, `tang_bits_e.py`), the 4,000-null set (`make_nulls_big.py`), the decoder's goal (`decoder_goal.py`); `README.md` lists the settings |
 | `pipeline/` | GPU-node setup and job plans: `setup_env.sh`, `get_data.sh`, `stage_code.sh`, `prep_node.sh`, `prep_resp.py`, the job runner `phasec_sched.py`, the plans of the three runs that make the paper's grid (`phasee_sched_E.py`, `_E2.py`, `_E4.py`), `run_node.sh`, `collect_out_e.sh` |
-| `figures/` | one script per paper figure (see `figures/README.md`) |
-| `results/` | learning curves and `results.md` (which run the paper uses, the within-story table) |
+| `figures/` | one MATLAB script per paper figure, their figure data (`figdata/`), the Fig. 1A renders and their Blender scripts (`fig1_3d/`), the paper's PDFs (`reference/`); see `figures/README.md` |
+| `results/` | `results.md` (the run the paper uses, the within-story table), `GRID_E4_s7.json` (the paper's grid: curves, crossings, slopes, tests), `numbers_final.py` (prints every Results number from it), `within_story_control.csv`, `learning_curves/*.png` |
 
 Docstrings keep the provenance notes of the original scripts (phase names such as Phase B/C/E4, references to internal design
 notes such as DESIGN_E.md or LOG.md, which are not part of this release); the code is the code that produced the paper's numbers,
@@ -38,12 +38,12 @@ export WORK_DIR=/tmp/vvd_work
 ```
 
 It prints the 5-cm voxel's two-way echo budget (Fig. 1A), its speech signal in one 2-s scan (Fig. 1B), the Monte Carlo
-spread at 5 cm, the noise one probe adds to the readouts' voxels and the pessimistic reach, checks each number against the
+spread at 5 cm, the SNR change one probe causes in the readouts' voxels (negative = more noise) and the pessimistic reach, checks each number against the
 paper, and writes `$WORK_DIR/linkbudget/fig1c.{png,pdf}`. Without the per-voxel data it reads Fig. 1C's binned quantiles from
 `linkbudget/summary/fig1c_summary.json`; with them (steps 2-3 below) it recomputes them. Expected output (paper in brackets):
 echo SNR -9.95 dB, i.e. about 10 dB below the receiver noise; speech signal -41.39 dB [-41.4], 22.3 / 23.3 / 24.0 dB below
-fMRI's [22 to 24]; Monte Carlo at 5 cm -61.0 / -41.9 / -28.4 dB; added noise 10.7-13.7 dB optimistic [11 to 14] and
-23.2-25.5 dB median [23 to 26]; pessimistic reach 1.85-4.85 cm [1.9 to 4.9].
+fMRI's [22 to 24]; Monte Carlo at 5 cm -61.0 / -41.9 / -28.4 dB; SNR change -10.7 to -13.7 dB optimistic [-11 to -14] and
+-23.2 to -25.5 dB median [-23 to -26; the largest participant value is -25.49 dB]; pessimistic reach 1.85-4.85 cm [1.9 to 4.9].
 
 ## Data
 
@@ -119,8 +119,10 @@ Steps 1-3 and 9-10 run on a CPU machine, steps 4-8 on GPU machines (one NVIDIA L
    (likewise E2, E4; about 6 min per participant); `SLOPE_SET=7 python verifiers/analysis/grid.py --results $WORK_DIR/results/E $WORK_DIR/results/E2 $WORK_DIR/results/E4 --out $WORK_DIR/analysis`
    (learning curves, hours to the goal, noise survived, slopes and the moving-block / story-cluster bootstrap, about 10 s; the
    paper's merge also included Phase E3, a coded-excitation run that is not in the ISBI paper and adds no cell used here);
-   `python verifiers/analysis/make_fig_data.py $WORK_DIR/analysis/GRID_E4_s7.json figures/data`.
-10. **Figures**: `figures/README.md`.
+   `python verifiers/analysis/make_fig_data.py $WORK_DIR/analysis/GRID_E4_s7.json figures/figdata`; `python results/numbers_final.py`
+   (every Results number); within-story control: `verifiers/within_story_control/README.md` (one L4, about 35 min per participant).
+10. **Figures** (CPU, MATLAB R2024b, about 10-15 s each): `matlab -batch "run('figures/fig1_imaging_v3.m')"`, likewise
+    `fig2_learning_e4.m` and `fig3_coded_e4.m`; see `figures/README.md`. `python results/make_learning_curves.py` draws the full learning curves.
 
 The link budget and figures need no GPU. The paper's GPU runs used AWS g6.4xlarge (verifiers) and g6.2xlarge (decoder) nodes;
 cloud orchestration is not part of this repository.

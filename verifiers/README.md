@@ -15,3 +15,6 @@ data, so chance is 0 bits; the contrastive verifier is scored on held-out traini
 bootstrap), encode-then-compare and the decoder on the 56 windows of the held-out test story (moving-block bootstrap, blocks
 of 3 windows, paired). `analysis/grid.py` computes the learning curves, the training needed for the goal (interpolated in
 log10 hours), the noise survived, and the slopes (least squares of bits on log10 hours over n4 ... n82) with bootstrap CIs.
+
+Within-story control (`within_story_control/`): the contrastive verifier scored with wrong options from the SAME story instead
+of other stories; see its README and `results/results.md`.
