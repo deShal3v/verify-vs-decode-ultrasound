@@ -58,7 +58,7 @@ text(ov, 0.0, 11.5, 'A', 'FontSize', 10, 'VerticalAlignment', 'middle');
 if numel(fr) == 11, fr = [fr(1:3); fr(4) + fr(9); fr(5:8); fr(10:11)]; end   % K = 10 data folded to the K = 2 row layout
 sb = 10 ^ (er(9) / 10); fb = sb / (1 + sb); st = fr(3) + fr(4); us = fr(10); fm = mean(nat);
 STEPS = {'total', st, C_PROBE * 0.5 + 0.5, {'perfect', 'echo'};
-         'step', fr(1) + fr(2), C_PROBE * 0.6 + 0.4 * [1 1 1], {'echo is', sprintf('%.0f%% blood', 100 * fb)};
+         'step', fr(1) + fr(2), C_LOSS * 0.8 + 0.2, {'echo is', sprintf('%.0f%% blood', 100 * fb)};   % a loss: orange like the other losses
          'step', fr(5) + fr(6), C_LOSS, {'response', 'is 4.5%'};
          'step', fr(8) + fr(9), C_LOSS * 0.55 + 0.45, {'26%', 'specific'};
          'total', us, TOT3, {'ultra-', 'sound'};
