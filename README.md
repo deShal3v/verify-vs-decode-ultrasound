@@ -5,6 +5,7 @@ Omer Shalev, independent researcher
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23527277.svg)](https://doi.org/10.5281/zenodo.23527277)
 
 Archived on Zenodo: v1.0-isbi, doi:[10.5281/zenodo.23527277](https://doi.org/10.5281/zenodo.23527277) (all versions: doi:[10.5281/zenodo.23527276](https://doi.org/10.5281/zenodo.23527276)).
+Note: in the archived v1.0-isbi, `figures/fig2_learning_e4.m` also draws a gray within-story marker in panel C that the paper's final Fig. 2 omits (the result is in the text, §3.2, and in `results/within_story_control.csv`); `main` reproduces the paper's figures exactly.
 
 Code for the IEEE ISBI 2027 paper. A per-voxel Monte Carlo link budget of a functional-ultrasound probe on the left temple
 (K = 2 one-second power-Doppler images per 2-s scan) predicts each voxel's signal-to-noise ratio; noise is added to public fMRI
