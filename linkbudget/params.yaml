@@ -1,0 +1,176 @@
+# Parameters of the transcranial functional-ultrasound link budget (Shalev, ISBI 2027).
+#
+# Every number below is the value that produced the paper's Fig. 1 and the per-voxel noise maps.
+# linkbudget/params.py loads this file; snr_model.py, depth_curves.py, snr_montecarlo.py, k2_maps.py and
+# fig1_linkbudget.py take their constants from it (nothing is hard-coded twice).
+# Each entry has a `cite`: a published source, or "assumed" / "derived" when the value is a modelling choice.
+# dB conventions: echo SNR in 10 log10 (power); functional SNR d' in 20 log10 (amplitude).
+
+acoustics:
+  sound_speed_m_per_s:
+    value: 1540.0
+    cite: "Standard soft-tissue sound speed (IT'IS Foundation tissue database v4.1, 2022, doi:10.13099/VIP21000-04-1: brain 1546 m/s)"
+  frequency_MHz:
+    value: 2
+    cite: "Design choice. Centre of the 2-2.5 MHz temporal-window optimum and the 2-MHz transcranial Doppler standard; Vienneau et al. 2026 (IEEE TBME, doi:10.1109/TBME.2026.3680008) image at 2.6 MHz"
+  aperture_mm:
+    value: 20
+    cite: "Design choice: an aperture that fits inside the temporal acoustic window"
+  aperture_20mm_correction:
+    sn_loss_dB: 2.0
+    cells_divisor: 2.25
+    cite: "Derived: a 20-mm instead of 30-mm aperture costs about 2 dB of thermal-noise echo SNR and a factor 1.5 in sqrt(cells) (resolution-cell model, lateral cell size proportional to wavelength x depth / aperture)"
+
+# Two-way attenuation. In the model these coefficients (i) move the thermal-noise SNR when the bone is thicker or thinner
+# than the 2.7-mm reference of the echo table below and (ii) split the 5-cm echo budget into the components labelled in
+# Fig. 1A. The depth dependence of the thermal-noise SNR itself comes from the echo table (-3 dB per cm at 2 MHz).
+attenuation:
+  compact_bone:
+    coef_dB_per_mm: 2.1          # alpha = coef * f[MHz]^exponent, dB per mm, one way
+    exponent: 1.1
+    cite: "Webb et al. 2021, IEEE TUFFC 68(5):1532-1545, doi:10.1109/TUFFC.2020.3039743 (outer compact table, Table II; power law fitted to the 1 and 2.25 MHz values)"
+  bone_surfaces_dB:
+    value: 2.9                   # per one-way pass through the bone (two surfaces); 4 crossings two-way = 5.8 dB
+    cite: "Webb et al. 2021 (reflection loss of the layered skull model)"
+  brain:
+    coef_dB_per_cm: 0.59         # alpha = coef * f[MHz]^exponent, dB per cm, one way
+    exponent: 1.3
+    cite: "IT'IS Foundation tissue properties database v4.1 (2022), doi:10.13099/VIP21000-04-1 (brain: alpha0 6.80 Np/m/MHz, b = 1.3)"
+  scalp_dB_per_cm_per_MHz:
+    value: 1.0
+    cite: "assumed (soft-tissue rule of thumb, 1 dB/cm/MHz; range 0.6-1.5)"
+  scalp_thickness_cm:
+    value: 0.5
+    cite: "assumed (scalp and temporalis muscle over the squama)"
+  reference_bone_mm:
+    value: 2.7
+    cite: "Thickness of the temporal squama assumed in the echo table below (good temporal window)"
+  aberration_corrected_dB:
+    value: 0.4
+    cite: "Derived: Marechal approximation 4.34 (2 pi f tau)^2 per receive pass, 1.7 dB uncorrected, 0.4 dB with the residual delay halved by correction; Vienneau et al. 2026 report 2-4 dB recovered by aberration correction"
+
+# Thermal-noise echo SNR per independent Doppler sample (s_n, dB), resolution cells per 27 mm^3 and the worked-example
+# d' (delta 10 %, K = 10, 30-mm aperture) at the reference bone (2.7 mm) and a 30 x 30 mm aperture.
+# Rows: [f_MHz, z_cm, s_n_dB, cells_per_27mm3, dprime_worked_example]. Only the 2-MHz rows enter the paper.
+echo_table:
+  rows:
+    - [1, 2, 20, 11, 0.52]
+    - [1, 3, 19, 5, 0.43]
+    - [1, 4, 18, 3, 0.34]
+    - [1, 5, 17, 2, 0.27]
+    - [2, 2, 3, 89, 0.63]
+    - [2, 3, 0, 39, 1.08]
+    - [2, 4, -3, 22, 0.92]
+    - [2, 5, -6, 14, 0.57]
+    - [3, 2, -16, 299, 0.07]
+    - [3, 3, -21, 133, 0.08]
+    - [3, 4, -26, 75, 0.02]
+    - [3, 5, -31, 48, 0.01]
+  cite: "Derived for this study (radar-equation link budget): thermal noise (Mellen), blood backscatter (Rayleigh, f^4) x cerebral blood volume, the attenuation above, coherent integration over the blood decorrelation time; calibration point s_n = -6 dB (range -16 to +4) at 2 MHz, 5 cm, 2.7-mm temporal bone, 30-mm aperture. Cells from the resolution-cell model (2-cycle pulse, x1.5 apodization)"
+  worked_example_inputs:         # settings of the worked-example d' column (used only to back out leakage at 1 and 3 MHz and as a check)
+    delta: 0.10
+    lam: 0.07
+    K: 10
+    T_s: 1.0
+    v_mm_per_s: 3.0
+    cite: "Worked example of the derivation above"
+
+# Leakage terms of the echo SNR, 1/s = 1/s_n + 1/s_c + 1/s_r (s_c tissue clutter after SVD filtering, s_r reverberation).
+leakage:
+  clutter_2MHz_dB:
+    value: 5.0
+    cite: "assumed (no human measurement of residual tissue clutter after SVD filtering); Monte Carlo varies it by +-10 dB"
+  reverberation_2MHz_dB_by_depth_cm:
+    value: {2: -10, 3: 0, 4: 10, 5: 20}
+    cite: "assumed placeholder for skull reverberation at the temporal bone (degraded by twice any extra bone loss); Monte Carlo varies it by +-10 dB"
+
+# Functional SNR (Krueger-Glover form): d' = delta sqrt(K) SNR0 / sqrt(1 + lam^2 K SNR0^2), SNR0 = sqrt(N) s / (1 + s),
+# N = cells x T / tau_c, tau_c = (c / f) / (2 v).
+functional:
+  model:
+    cite: "Krueger & Glover 2001, Magn. Reson. Med. 46(4):631-637, doi:10.1002/mrm.1240 (physiological-noise model); power-estimate variance (1 + 1/s)^2 / N"
+  K_images_per_scan:
+    value: 2
+    cite: "Design: K = 2 one-second power-Doppler images per 2-s fMRI scan (continuous acquisition over one repetition time, TR = 2 s)"
+  T_image_s:
+    value: 1.0
+    cite: "Design: 1-s power-Doppler ensembles (Vienneau et al. 2026 use 1-1.2 s ensembles)"
+  TR_s:
+    value: 2.0
+    cite: "LeBel et al. 2023, Sci. Data 10:555, doi:10.1038/s41597-023-02437-z (fMRI repetition time)"
+  rho:
+    value: 0.26
+    # Human BOLD range computed from released data with the same definition (stimulus-specific share of the response):
+    # 0.07 speech clip vs speech clip and 0.29 all natural sounds in auditory cortex (Norman-Haignere et al. 2015,
+    # Neuron 88:1281, doi:10.1016/j.neuron.2015.11.035), 0.65 single sentences in the language network (Tuckute et al.
+    # 2024, Nat. Hum. Behav. 8:544, doi:10.1038/s41562-023-01783-7). 0.26 lies inside 0.07-0.65.
+    cite: "Share of the response that differs between stimuli (rho = C/A), measured in released monkey functional-ultrasound data (Griggs et al., 8 saccade directions, posterior parietal cortex; 0.31 and 0.21 in two sessions, this study's analysis); 20 log10 0.26 = -11.7 dB"
+  linkbudget_voxel_mm3:
+    value: 27.0
+    cite: "Design: link budget evaluated for a 3 x 3 x 3 mm voxel"
+  fmri_voxel_mm3:
+    value: 17.834468410669288
+    cite: "LeBel et al. 2023 ds003020 functional grid, 2.619 x 2.619 x 2.600 mm (pycortex mask_thick header); -1.8 dB. k2_maps.py reads each participant's value from the data"
+  function_defaults:             # defaults of snr_model.model() / depth_curves.model_z(): the earlier 10-s-trial baseline
+    delta: 0.037
+    lam: 0.07
+    K: 10
+    v_mm_per_s: 3.0
+    cite: "Historical baseline inputs of the function signatures (not used for the paper's numbers, which use the Monte Carlo below)"
+
+# Monte Carlo over the uncertain inputs (all varied jointly). Its 10th / 50th / 90th percentiles per distance define pessimistic,
+# median and optimistic physics (uncertainty about the physics, not scatter between voxels).
+monte_carlo:
+  N:
+    value: 20000
+    cite: "Design"
+  seed:
+    value: 0
+    cite: "numpy.random.default_rng(0); draw order: cal_db, delta, bone_mm, z (kept for the order), leak_db, lam, v"
+  cal_db:
+    uniform: [-10.0, 10.0]
+    cite: "Echo-SNR calibration of the thermal-noise table, +-10 dB (assumed spread of the first-principles calibration)"
+  delta:
+    log_uniform: [0.02, 0.10]
+    cite: "Fractional blood-volume response to speech, 2-10 % (assumed; below the 10-40 % evoked in monkey V1 functional ultrasound, doi:10.1073/pnas.1916787117, and around a 6 % human auditory response)"
+  bone_mm:
+    uniform: [2.0, 3.8]
+    cite: "Temporal bone thickness of good to marginal windows; He et al. 2022, Brain Behav. 12(4):e2543, doi:10.1002/brb3.2543"
+  z_cm_draw:
+    choice: [3, 4, 5]
+    cite: "Depth draw of the original 3-5 cm Monte Carlo; kept only so that the other draws are identical (each depth on the grid is evaluated on all draws)"
+  leak_db:
+    uniform: [-10.0, 10.0]
+    cite: "Clutter and reverberation leakage, +-10 dB (assumed)"
+  lam:
+    log_uniform: [0.05, 0.20]
+    cite: "Physiological noise of power Doppler, lambda 0.05-0.20 at 0.25-1 s sampling (derived from monkey fUS trial variability, Norman et al. 2021 Neuron doi:10.1016/j.neuron.2021.03.003; Krueger & Glover 2001 form)"
+  v_mm_per_s:
+    log_uniform: [1.5, 6.0]
+    cite: "Mean blood speed in the voxel, 1.5-6 mm/s (assumed; rodent capillary red-cell speed ~2 mm/s, doi:10.1016/j.brainres.2010.01.032; no human data)"
+
+depth:
+  grid_cm:
+    start: 1.0
+    stop: 10.0001
+    step: 0.05
+    cite: "Design (numpy.arange(1.0, 10.0001, 0.05))"
+  extension:
+    value: "piecewise linear in dB per cm between echo-table rows (2-5 cm), extrapolated with the end-segment slopes"
+    cite: "Design"
+
+per_voxel:
+  floor_dB:
+    value: -60.0
+    cite: "Design: voxels whose predicted SNR per 2-s scan is below -60 dB are dropped"
+  validity_mm:
+    value: [10.0, 80.0]
+    cite: "Design: 1-8 cm from the probe (echo table 2-5 cm, extrapolated at most 1 cm shallower and 3 cm deeper)"
+  uniform_gain_dB:
+    value: [6.0, 12.0, 18.0]
+    cite: "Design: 'added gain' conditions (target raised by 6, 12, 18 dB on median physics)"
+
+reference_point:
+  z_cm:
+    value: 5.0
+    cite: "Fig. 1A/B: the voxel 5 cm deep; every Monte Carlo input at its analytic median (midpoint of a uniform range, geometric mean of a log-uniform range)"

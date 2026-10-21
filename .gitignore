@@ -1,0 +1,33 @@
+# data, derived data and model outputs never go into the repository
+data/
+work/
+out/
+rescue/
+models/
+checkpoints/
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.hf5
+*.nii
+*.nii.gz
+*.mgz
+us_maps*
+anat_cols*
+nulls*.json
+# environments and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+.env.*
+# keys and credentials
+*.pem
+*_key
+*_key.pub
+id_rsa*

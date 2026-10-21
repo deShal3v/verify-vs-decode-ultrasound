@@ -1,0 +1,12 @@
+# CPU path: link budget, Fig. 1 numbers, noise maps, voxel sets, grid analysis and figure data (Python >= 3.11).
+# linkbudget/ needs only the first four; the fresh-clone check installs this whole file.
+numpy==2.4.6
+scipy==1.17.1
+matplotlib==3.10.9
+pyyaml==6.0.3
+# per-voxel maps (noise/, voxels/, linkbudget/build_geometry.py)
+nibabel==5.4.2
+nilearn==0.14.1
+h5py==3.16.0
+fsspec==2026.7.0
+requests==2.34.2

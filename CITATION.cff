@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper."
+title: "Simulated transcranial ultrasound of human language cortex: verifying heard speech needs far less data and signal than decoding it"
+authors:
+  - family-names: Shalev
+    given-names: Omer
+    affiliation: "Independent researcher"
+date-released: 2026-10-21
+year: 2026
+license: MIT
+repository-code: "https://github.com/deShal3v/verify-vs-decode-ultrasound"
+type: software
+preferred-citation:
+  type: conference-paper
+  title: "Simulated transcranial ultrasound of human language cortex: verifying heard speech needs far less data and signal than decoding it"
+  authors:
+    - family-names: Shalev
+      given-names: Omer
+      affiliation: "Independent researcher"
+  collection-title: "IEEE International Symposium on Biomedical Imaging (ISBI 2027)"
+  year: 2026
